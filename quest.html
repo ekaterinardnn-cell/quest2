@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Квест на день рождения — райский берег</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(135deg, #e7f0ed 0%, #d4e3df 100%);
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            padding: 20px 16px 40px;
+            color: #2c4b3e;
+            position: relative;
+            min-height: 100vh;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            background: repeating-linear-gradient( transparent 0px, transparent 38px, rgba(135, 181, 163, 0.2) 38px, rgba(135, 181, 163, 0.2) 42px);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            background: rgba(255, 254, 250, 0.92);
+            backdrop-filter: blur(2px);
+            border-radius: 48px;
+            box-shadow: 0 20px 40px rgba(0, 20, 15, 0.1);
+            padding: 24px 24px 32px;
+            position: relative;
+            z-index: 2;
+            border: 1px solid rgba(210, 226, 215, 0.7);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #cbdcd3;
+        }
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            color: #2e7a66;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header h1:before {
+            content: "🎂";
+            font-size: 2rem;
+            opacity: 0.8;
+        }
+        .header h1:after {
+            content: "🎁";
+            font-size: 1.8rem;
+            opacity: 0.8;
+        }
+        .header p {
+            color: #6f9a8b;
+            font-style: italic;
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+        .token-bar {
+            background: #f0f7f4;
+            border-radius: 60px;
+            padding: 8px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            border: 1px solid #cde0d7;
+        }
+        .token-count {
+            font-weight: bold;
+            color: #2e7a66;
+            font-size: 1.2rem;
+        }
+        .token-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        .small-btn {
+            background: #e2efea;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #2c5a4b;
+        }
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+            background: #eef4f1;
+            border-radius: 80px;
+            padding: 6px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border-radius: 50px;
+            font-weight: 500;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #3f6b5c;
+            transition: 0.2s;
+            font-size: 0.95rem;
+        }
+        .tab.active {
+            background: white;
+            color: #2b7a64;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            font-weight: 600;
+        }
+        .quest-card {
+            background: #ffffffd9;
+            border-radius: 40px;
+            padding: 28px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 12px 24px rgba(0, 30, 20, 0.08);
+            border: 1px solid #cde0d7;
+        }
+        .badge {
+            background: #e0f0ea;
+            display: inline-block;
+            padding: 5px 18px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            color: #2a7a63;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .task-title {
+            font-size: 1.6rem;
+            font-weight: 400;
+            margin-bottom: 12px;
+            color: #2e5b4e;
+            border-left: 4px solid #7fb2a0;
+            padding-left: 18px;
+        }
+        .riddle-text {
+            background: #fafef9;
+            padding: 20px;
+            border-radius: 32px;
+            font-family: 'Courier New', monospace;
+            margin: 16px 0;
+            border: 1px solid #cee2d9;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #2b5446;
+        }
+        .answer-area {
+            display: flex;
+            gap: 12px;
+            margin: 20px 0 12px;
+            flex-wrap: wrap;
+        }
+        .answer-area input {
+            flex: 2;
+            padding: 14px 20px;
+            border-radius: 60px;
+            border: 1px solid #bfd9cf;
+            background: white;
+            font-size: 1rem;
+        }
+        .answer-area input:focus {
+            outline: none;
+            border-color: #6fa392;
+            box-shadow: 0 0 0 3px rgba(111, 163, 146, 0.2);
+        }
+        .answer-area button {
+            background: #bfddd2;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 60px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #2c5a4b;
+            font-size: 1rem;
+        }
+        .answer-area button:active {
+            transform: scale(0.96);
+        }
+        .feedback {
+            font-size: 0.85rem;
+            margin: 12px 0;
+        }
+        .correct {
+            color: #2c7a5e;
+            background: #e1f5ee;
+            padding: 6px 16px;
+            border-radius: 40px;
+            display: inline-block;
+        }
+        .wrong {
+            color: #bc6f5a;
+            background: #ffe6e0;
+            padding: 6px 16px;
+            border-radius: 40px;
+            display: inline-block;
+        }
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .nav-btn {
+            flex: 1;
+            background: #e2efea;
+            border: none;
+            padding: 14px;
+            border-radius: 60px;
+            font-weight: 500;
+            cursor: pointer;
+            color: #2e6b5a;
+            font-size: 1rem;
+        }
+        .nav-btn:active {
+            transform: scale(0.97);
+        }
+        .nav-btn:disabled {
+            opacity: 0.5;
+            background: #cfdfd7;
+            transform: none;
+        }
+        .progress-bar {
+            background: #ddebe5;
+            border-radius: 30px;
+            height: 10px;
+            margin: 12px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: #7fb2a0;
+            border-radius: 30px;
+            transition: width 0.4s ease;
+        }
+        .progress-text {
+            text-align: right;
+            font-size: 0.7rem;
+            color: #6f9a8b;
+        }
+        .action-btn {
+            background: #e2efea;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 40px;
+            font-weight: 500;
+            margin: 5px;
+            cursor: pointer;
+            color: #2a5e4f;
+        }
+        .dev-active {
+            background: #8fb9aa;
+            color: white;
+        }
+        .dev-panel {
+            background: #f6fef9;
+            border-radius: 48px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #cbe2d8;
+            display: none;
+        }
+        .dev-panel.show {
+            display: block;
+        }
+        .dev-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .dev-row label {
+            width: 150px;
+            font-weight: 500;
+            color: #2c6a5a;
+        }
+        input[type="color"] {
+            width: 50px;
+            height: 40px;
+            border: 1px solid #bfd9cf;
+            border-radius: 20px;
+            background: white;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(40, 60, 50, 0.85);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .modal-card {
+            background: #fffef8;
+            max-width: 700px;
+            margin: 40px auto;
+            border-radius: 56px;
+            padding: 28px;
+            position: relative;
+            border: 1px solid #c2dbcf;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+        }
+        .close {
+            position: absolute;
+            top: 16px;
+            right: 24px;
+            font-size: 28px;
+            cursor: pointer;
+            color: #7fae9c;
+        }
+        .qr-print-item {
+            background: #fcfef7;
+            padding: 16px;
+            border-radius: 32px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid #cde0d7;
+        }
+        .congrats-sea {
+            text-align: center;
+            font-size: 2rem;
+            color: #2c7a64;
+            margin: 20px 0;
+            font-weight: 300;
+        }
+        .cake {
+            font-size: 3rem;
+            text-align: center;
+            animation: gentle 1.2s infinite;
+        }
+        @keyframes gentle {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .music-btn {
+            background: #bfddd2;
+            color: #2c5a4b;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 60px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .scanner-btn {
+            background: #6fa392;
+            color: white;
+        }
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            margin-top: 20px;
+            color: #88aa9c;
+        }
+        .hint-text {
+            background: #fff1d6;
+            padding: 12px;
+            border-radius: 28px;
+            margin-top: 12px;
+            border-left: 4px solid #d4a373;
+        }
+        .editor-group {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #cde0d7;
+            padding-bottom: 16px;
+        }
+        .editor-item {
+            background: #fafef9;
+            border-radius: 32px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .editor-item label {
+            font-weight: bold;
+            display: block;
+            margin: 8px 0 4px;
+            color: #2c6a5a;
+        }
+        .editor-item input, .editor-item textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 28px;
+            border: 1px solid #bfd9cf;
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>КВЕСТ НА ДЕНЬ РОЖДЕНИЯ</h1>
+        <p>расшифруй тайны, найди QR-ключи, открой финал</p>
+    </div>
+
+    <div class="token-bar">
+        <span class="token-count">🐚 Токенов: <span id="tokenAmount">0</span></span>
+        <div class="token-buttons">
+            <button class="small-btn" id="riddleForTokenBtn">🧩 Загадка для токена</button>
+            <button class="small-btn" id="buyHintBtn">💡 Купить подсказку (1 токен)</button>
+        </div>
+    </div>
+
+    <div class="tabs" id="tabs">
+        <button class="tab active" data-part="0">Часть 1 · Лагуна</button>
+        <button class="tab" data-part="1">Часть 2 · Риф</button>
+        <button class="tab" data-part="2">Часть 3 · Остров</button>
+    </div>
+
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text" id="progressText"></div>
+
+    <div id="questCard" class="quest-card"></div>
+
+    <div class="nav-buttons">
+        <button class="nav-btn" id="prevBtn">◀ Назад к волнам</button>
+        <button class="nav-btn" id="nextBtn">Вперёд к тайне ▶</button>
+    </div>
+    <button class="action-btn" id="resetProgressBtn">⟳ Сбросить прогресс части</button>
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 15px;">
+        <button class="action-btn" id="editTasksBtn">✎ Редактировать задания (все)</button>
+        <button class="action-btn" id="devModeBtn">🛠 Режим разработчика (пароль)</button>
+        <button class="action-btn" id="handbookBtn">📖 Справочник</button>
+        <button class="action-btn" id="printQrBtn">🖨 QR-коды</button>
+        <button class="action-btn scanner-btn" id="startScannerBtn">📷 Сканер QR</button>
+    </div>
+
+    <div id="devPanel" class="dev-panel">
+        <h3>🎨 Панель разработчика</h3>
+        <div class="dev-row"><label>Фон карточки:</label><input type="color" id="cardBg" value="#ffffffd9"></div>
+        <div class="dev-row"><label>Цвет заголовка:</label><input type="color" id="titleColor" value="#2e5b4e"></div>
+        <div class="dev-row"><label>Цвет шифра:</label><input type="color" id="riddleColor" value="#2b5446"></div>
+        <div class="dev-row"><label>Фон шифра:</label><input type="color" id="riddleBg" value="#fafef9"></div>
+        <div class="dev-row"><label>Цвет кнопок:</label><input type="color" id="btnColor" value="#bfddd2"></div>
+        <button class="action-btn" id="applyStyleBtn">Применить</button>
+        <hr style="margin: 16px 0; border-color:#cde0d7;">
+        <button class="action-btn" id="showAnswersBtn">📜 Показать все ответы (окно)</button>
+        <button class="action-btn" id="addTokensDevBtn">➕ Добавить 10 токенов</button>
+        <button class="action-btn" id="resetTokensDevBtn">🔄 Сбросить токены</button>
+    </div>
+
+    <footer>За решённые загадки даются токены. За токен можно купить подсказку к заданию.</footer>
+</div>
+
+<!-- Модалки -->
+<div id="handbookModal" class="modal"><div class="modal-card"><span class="close" id="closeHandbook">&times;</span>
+    <h3>📖 Штурманский справочник</h3>
+    <p><b>Алфавит (А=1, Б=2... Я=33)</b><br>А1 Б2 В3 Г4 Д5 Е6 Ё7 Ж8 З9 И10 Й11 К12 Л13 М14 Н15 О16 П17 Р18 С19 Т20 У21 Ф22 Х23 Ц24 Ч25 Ш26 Щ27 Ъ28 Ы29 Ь30 Э31 Ю32 Я33</p>
+    <p><b>Двоичный ASCII:</b> 01100001=a, 01100010=b ... 01111010=z</p>
+    <p><b>Цезарь:</b> сдвиг на N → расшифровка сдвигом назад.</p>
+    <p><b>Виженер:</b> (шифр - ключ) mod 33, ключ повторяется.</p>
+    <p><b>Атбаш:</b> А↔Я, Б↔Ю, В↔Э...</p>
+</div></div>
+
+<div id="printModal" class="modal"><div class="modal-card"><span class="close" id="closePrint">&times;</span>
+    <h3 style="text-align:center;">🗝️ QR-ключи (распечатайте и спрячьте)</h3>
+    <div id="qrPrintContainer"></div>
+</div></div>
+
+<div id="riddleModal" class="modal"><div class="modal-card"><span class="close" id="closeRiddleModal">&times;</span>
+    <h3>🧩 Получи токен</h3>
+    <p id="riddleQuestion">Загрузка...</p>
+    <input type="text" id="riddleAnswerInput" placeholder="Ваш ответ" style="width:100%; padding:12px; border-radius:40px; border:1px solid #bfd9cf; margin:15px 0;">
+    <button id="submitRiddleBtn" class="action-btn">Проверить</button>
+    <div id="riddleFeedback"></div>
+</div></div>
+
+<div id="hintModal" class="modal"><div class="modal-card"><span class="close" id="closeHintModal">&times;</span>
+    <h3>💡 Подсказка к заданию</h3>
+    <div id="hintText" class="hint-text">Подсказка появится здесь после покупки.</div>
+    <button id="confirmBuyHintBtn" class="action-btn" style="margin-top:15px;">Купить за 1 токен</button>
+</div></div>
+
+<div id="answersModal" class="modal"><div class="modal-card"><span class="close" id="closeAnswersModal">&times;</span>
+    <h3>📋 Ответы на задания (для организатора)</h3>
+    <div id="answersList"></div>
+</div></div>
+
+<div id="editorModal" class="modal"><div class="modal-card"><span class="close" id="closeEditorModal">&times;</span>
+    <h3>✎ Редактор всех заданий</h3>
+    <div id="editorContainer"></div>
+    <button id="saveEditorBtn" class="action-btn" style="margin-top:20px;">💾 Сохранить все изменения</button>
+</div></div>
+
+<div id="congratsModal" class="modal"><div class="modal-card" style="text-align:center;">
+    <span class="close" id="closeCongrats">&times;</span>
+    <div class="congrats-sea">🎉 С днём рождения! 🎉</div>
+    <div class="cake">🎂🌊🐚</div>
+    <p style="font-size:1.2rem; margin:15px 0;">Поздравляем! Вы нашли сокровище и завершили квест!</p>
+    <audio id="birthdayAudio" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" preload="auto"></audio>
+    <button id="playMusicBtn" class="music-btn">🔊 Включить музыку</button>
+    <button id="closeCongratsBtn" style="margin-top:15px; background:#bfddd2; border:none; padding:8px 20px; border-radius:40px;">Закрыть</button>
+</div></div>
+
+<script>
+    // ---------- ЗАДАНИЯ (15 шифров, ответы, подсказки) ----------
+    const DEFAULT_TASKS = {
+        0: [
+            { title: "Загадка лагуны 1", riddle: "Числовой код: 26 1 18 10 12 (А=1, Б=2...)", answer: "шарик", hint: "Это число означает буквы: 26=Щ, 1=А, 18=Р, 10=И, 12=К — но ответ не ЩАРИК, а похожее слово." },
+            { title: "Загадка лагуны 2", riddle: "Анаграмма: 'ЛАДОКВА'", answer: "кладовка", hint: "Переставь буквы, чтобы получилось место для хранения вещей." },
+            { title: "Загадка лагуны 3", riddle: "Цезарь (сдвиг +3): 'Фспсосйьсрп' → расшифруй", answer: "холодильник", hint: "Сдвинь каждую букву на 3 назад по алфавиту." },
+            { title: "Загадка лагуны 4", riddle: "Числовой код: 5 10 3 1 15 (А=1...)", answer: "диван", hint: "Преврати числа в буквы." },
+            { title: "Загадка лагуны 5", riddle: "Перевёртыш: 'анитраж'", answer: "картина", hint: "Прочитай слово задом наперёд и добавь букву." }
+        ],
+        1: [
+            { title: "Загадка рифа 1", riddle: "Атбаш (А↔Я, Б↔Ю...): 'ьглрнср'", answer: "тапочки", hint: "Каждая буква заменяется на противоположную в алфавите." },
+            { title: "Загадка рифа 2", riddle: "Акростих: Полка, Ручка, Игла, Холст, Веник, Абажур, Тряпка, Кран, Апельсин", answer: "прихватка", hint: "Возьми первые буквы каждого слова." },
+            { title: "Загадка рифа 3", riddle: "Бинарный: 01110110 01100001 01101110 01101110 01100001", answer: "ванна", hint: "Переведи двоичный код в латинские буквы, получится английское слово." },
+            { title: "Загадка рифа 4", riddle: "Числовой код: 19 12 1 22 (А=1...)", answer: "шкаф", hint: "Числа → буквы." },
+            { title: "Загадка рифа 5", riddle: "Виженер, ключ 'ДР': 'ЦХПХЁЩЛЯФ' → расшифруй", answer: "телевизор", hint: "Используй шифр Виженера с ключом ДР." }
+        ],
+        2: [
+            { title: "Загадка острова 1", riddle: "Палиндром: 'АПИАЛ' → прочитай наоборот", answer: "пиала", hint: "Наоборот получится ЛАИПА, переставь буквы." },
+            { title: "Загадка острова 2", riddle: "Имя задом наперёд: 'ЫНЯТУК'", answer: "катюня", hint: "Читай справа налево." },
+            { title: "Загадка острова 3", riddle: "Ребус: 'КО' + 'ВР' + 'ИК' (убери первую букву каждого)", answer: "коврик", hint: "Убери первые буквы, получишь О + Р + К = ОРК? Нет, подумай о слове 'коврик'." },
+            { title: "Загадка острова 4", riddle: "Числовой код: 2 1 13 12 16 15 (А=1...)", answer: "балкон", hint: "Числа → буквы." },
+            { title: "Загадка острова 5", riddle: "Анаграмма: 'РЕДВЬ' + 'Я'", answer: "дверь", hint: "Лишняя буква Я, остальное переставь." }
+        ]
+    };
+
+    // Дополнительные загадки для токенов (простые)
+    const TOKEN_RIDDLES = [
+        { question: "Что можно разбить, но никогда не собрать? (Ответ одним словом)", answer: "яйцо" },
+        { question: "Что не имеет начала и конца, но является началом всего? (Ответ: буква)", answer: "буква" },
+        { question: "Что принадлежит тебе, но другие пользуются этим чаще? (Ответ: имя)", answer: "имя" },
+        { question: "Что можно увидеть с закрытыми глазами? (Ответ: сон)", answer: "сон" },
+        { question: "Что становится больше, если его поставить вверх ногами? (Ответ: число 6)", answer: "6" },
+        { question: "Какой месяц в году самый короткий? (Ответ: май)", answer: "май" },
+        { question: "Что можно приготовить, но нельзя съесть? (Ответ: урок)", answer: "урок" }
+    ];
+    let currentRiddleIndex = 0;
+
+    // Глобальные переменные
+    let tasksData = JSON.parse(JSON.stringify(DEFAULT_TASKS));
+    let progress = { 0: 1, 1: 1, 2: 1 };
+    let currentPart = 0, currentTask = 0;
+    let editMode = false, devMode = false;
+    let answerStatus = {};
+    let scannedForTask = {};
+    let html5QrScanner = null;
+    let scannerActive = false;
+    let tokens = 0;
+    let devPassword = "50";
+
+    // Загрузка данных
+    function loadData() {
+        const saved = localStorage.getItem("sea_quest_full");
+        if (saved) {
+            try {
+                let data = JSON.parse(saved);
+                if (data.tasks) tasksData = data.tasks;
+                if (data.progress) progress = data.progress;
+                if (data.answerStatus) answerStatus = data.answerStatus;
+                if (data.scannedForTask) scannedForTask = data.scannedForTask;
+                if (data.tokens !== undefined) tokens = data.tokens;
+            } catch(e) {}
+        }
+        for(let i=0;i<3;i++) if(progress[i]<1) progress[i]=1;
+        updateTokenDisplay();
+    }
+    function saveAll() {
+        localStorage.setItem("sea_quest_full", JSON.stringify({
+            tasks: tasksData,
+            progress,
+            answerStatus,
+            scannedForTask,
+            tokens
+        }));
+    }
+
+    // Токены
+    function updateTokenDisplay() {
+        document.getElementById("tokenAmount").innerText = tokens;
+        saveAll();
+    }
+    function addTokens(amount) {
+        tokens += amount;
+        updateTokenDisplay();
+    }
+    function spendToken() {
+        if (tokens >= 1) {
+            tokens--;
+            updateTokenDisplay();
+            return true;
+        }
+        return false;
+    }
+
+    // Загадка для токена
+    function openRiddleModal() {
+        if (currentRiddleIndex >= TOKEN_RIDDLES.length) {
+            alert("Ты уже отгадал все загадки! Больше токенов получить нельзя.");
+            return;
+        }
+        const r = TOKEN_RIDDLES[currentRiddleIndex];
+        document.getElementById("riddleQuestion").innerText = r.question;
+        document.getElementById("riddleAnswerInput").value = "";
+        document.getElementById("riddleFeedback").innerHTML = "";
+        document.getElementById("riddleModal").style.display = "block";
+        document.getElementById("submitRiddleBtn").onclick = () => {
+            const userAns = document.getElementById("riddleAnswerInput").value.trim().toLowerCase();
+            if (userAns === r.answer.toLowerCase()) {
+                addTokens(1);
+                document.getElementById("riddleFeedback").innerHTML = '<span class="correct">✅ Верно! +1 токен.</span>';
+                currentRiddleIndex++;
+                setTimeout(() => {
+                    document.getElementById("riddleModal").style.display = "none";
+                }, 1500);
+            } else {
+                document.getElementById("riddleFeedback").innerHTML = '<span class="wrong">❌ Неверно, попробуй ещё.</span>';
+            }
+        };
+    }
+
+    // Подсказка
+    function openHintModal() {
+        if (tokens === 0) {
+            alert("У вас нет токенов. Решите загадку, чтобы получить токен.");
+            return;
+        }
+        const taskKey = `${currentPart}_${currentTask}`;
+        const hint = tasksData[currentPart][currentTask].hint;
+        document.getElementById("hintText").innerHTML = hint;
+        document.getElementById("hintModal").style.display = "block";
+        document.getElementById("confirmBuyHintBtn").onclick = () => {
+            if (spendToken()) {
+                alert("Подсказка куплена!");
+                document.getElementById("hintModal").style.display = "none";
+            } else {
+                alert("Недостаточно токенов.");
+            }
+        };
+    }
+
+    // Разблокировка по QR
+    function tryUnlockWithAnyQR() {
+        const taskKey = `${currentPart}_${currentTask}`;
+        if (answerStatus[taskKey] !== true) {
+            alert("Сначала разгадайте шифр!");
+            return false;
+        }
+        if (scannedForTask[taskKey]) {
+            alert("Этот QR-ключ уже использован для этого задания.");
+            return false;
+        }
+        if (currentTask === 4) {
+            if (currentPart === 2 && currentTask === 4) {
+                document.getElementById("congratsModal").style.display = "block";
+                scannedForTask[taskKey] = true;
+                saveAll();
+                return true;
+            } else {
+                alert("Это последнее задание части. Перейдите к следующей части.");
+                return false;
+            }
+        }
+        const nextTaskIdx = currentTask + 1;
+        if (progress[currentPart] === nextTaskIdx) {
+            progress[currentPart] = nextTaskIdx + 1;
+            scannedForTask[taskKey] = true;
+            saveAll();
+            renderCurrentTask();
+            updateProgress();
+            alert("✅ QR-ключ принят! Следующее задание открыто.");
+            return true;
+        } else {
+            alert("Не удалось разблокировать.");
+            return false;
+        }
+    }
+
+    // Редактор всех заданий
+    function openEditorModal() {
+        const container = document.getElementById("editorContainer");
+        container.innerHTML = "";
+        for (let p = 0; p < 3; p++) {
+            const partDiv = document.createElement("div");
+            partDiv.className = "editor-group";
+            partDiv.innerHTML = `<h3>📘 Часть ${p+1}</h3>`;
+            for (let t = 0; t < 5; t++) {
+                const task = tasksData[p][t];
+                const itemDiv = document.createElement("div");
+                itemDiv.className = "editor-item";
+                itemDiv.innerHTML = `
+                    <label>Задание ${t+1} — Заголовок</label>
+                    <input type="text" class="edit-title-${p}-${t}" value="${escapeHtml(task.title)}">
+                    <label>Шифр (текст загадки)</label>
+                    <textarea class="edit-riddle-${p}-${t}" rows="2">${escapeHtml(task.riddle)}</textarea>
+                    <label>Правильный ответ</label>
+                    <input type="text" class="edit-answer-${p}-${t}" value="${escapeHtml(task.answer)}">
+                    <label>Подсказка</label>
+                    <textarea class="edit-hint-${p}-${t}" rows="2">${escapeHtml(task.hint)}</textarea>
+                `;
+                partDiv.appendChild(itemDiv);
+            }
+            container.appendChild(partDiv);
+        }
+        document.getElementById("editorModal").style.display = "block";
+        document.getElementById("saveEditorBtn").onclick = () => {
+            for (let p = 0; p < 3; p++) {
+                for (let t = 0; t < 5; t++) {
+                    const titleInput = document.querySelector(`.edit-title-${p}-${t}`);
+                    const riddleTextarea = document.querySelector(`.edit-riddle-${p}-${t}`);
+                    const answerInput = document.querySelector(`.edit-answer-${p}-${t}`);
+                    const hintTextarea = document.querySelector(`.edit-hint-${p}-${t}`);
+                    if (titleInput && riddleTextarea && answerInput && hintTextarea) {
+                        tasksData[p][t].title = titleInput.value.trim() || "Без названия";
+                        tasksData[p][t].riddle = riddleTextarea.value.trim() || "Загадка";
+                        tasksData[p][t].answer = answerInput.value.trim().toLowerCase() || "ответ";
+                        tasksData[p][t].hint = hintTextarea.value.trim() || "Подсказка отсутствует";
+                    }
+                }
+            }
+            saveAll();
+            renderCurrentTask();
+            alert("Все задания сохранены!");
+            document.getElementById("editorModal").style.display = "none";
+        };
+    }
+
+    function renderCurrentTask() {
+        const task = tasksData[currentPart][currentTask];
+        const isUnlocked = (currentTask < progress[currentPart]);
+        const card = document.getElementById("questCard");
+        if (!card) return;
+        let lockHtml = '';
+        if (!isUnlocked && !devMode) lockHtml = '<div class="feedback wrong">🔒 Задание скрыто туманом. Найдите QR-код и отсканируйте.</div>';
+        const feedbackKey = `${currentPart}_${currentTask}`;
+        let fbHtml = '';
+        if (answerStatus[feedbackKey] === true) fbHtml = '<div class="feedback correct">✔ Шифр разгадан! Теперь найдите QR-код и отсканируйте.</div>';
+        else if (answerStatus[feedbackKey] === false) fbHtml = '<div class="feedback wrong">✘ Неверно, попробуйте снова.</div>';
+        
+        card.innerHTML = `
+            <div class="badge">Часть ${currentPart+1} · Задание ${currentTask+1}</div>
+            <div class="task-title" id="taskTitle">${escapeHtml(task.title)}</div>
+            <div class="riddle-text" id="riddleText">${escapeHtml(task.riddle)}</div>
+            <div class="answer-area">
+                <input type="text" id="answerInput" placeholder="Ваш ответ...">
+                <button id="checkBtn">Проверить</button>
+            </div>
+            <div id="fbArea">${fbHtml}</div>
+            ${lockHtml}
+        `;
+        const checkBtn = document.getElementById("checkBtn");
+        const ansInput = document.getElementById("answerInput");
+        if (checkBtn && ansInput) {
+            const handler = () => {
+                const userAns = ansInput.value.trim().toLowerCase();
+                const correct = task.answer.toLowerCase();
+                if (userAns === correct) {
+                    answerStatus[feedbackKey] = true;
+                    fbHtml = '<div class="feedback correct">✔ Шифр разгадан! Теперь найдите QR-код и отсканируйте.</div>';
+                } else {
+                    answerStatus[feedbackKey] = false;
+                    fbHtml = '<div class="feedback wrong">✘ Неверно, попробуйте снова.</div>';
+                }
+                document.getElementById("fbArea").innerHTML = fbHtml;
+                saveAll();
+            };
+            checkBtn.onclick = handler;
+            ansInput.onkeypress = (e) => { if(e.key === 'Enter') handler(); };
+        }
+        // Если включен режим редактирования прямо на слайде (опционально, но для удобства оставим)
+        if (editMode) {
+            const titleDiv = document.getElementById("taskTitle");
+            const riddleDiv = document.getElementById("riddleText");
+            if (titleDiv) titleDiv.contentEditable = "true";
+            if (riddleDiv) riddleDiv.contentEditable = "true";
+            const saveInline = () => {
+                tasksData[currentPart][currentTask].title = titleDiv.innerText.trim();
+                tasksData[currentPart][currentTask].riddle = riddleDiv.innerText.trim();
+                saveAll();
+            };
+            if (titleDiv) titleDiv.addEventListener("blur", saveInline);
+            if (riddleDiv) riddleDiv.addEventListener("blur", saveInline);
+        }
+        applyStyles();
+        updateNavButtons();
+    }
+
+    function updateNavButtons() {
+        const prev = document.getElementById("prevBtn"), next = document.getElementById("nextBtn");
+        prev.disabled = (currentTask === 0);
+        if (devMode) next.disabled = (currentTask === 4);
+        else next.disabled = (currentTask + 1 >= progress[currentPart]);
+    }
+
+    function updateProgress() {
+        const unlocked = progress[currentPart];
+        const percent = (unlocked / 5) * 100;
+        document.getElementById("progressFill").style.width = percent + "%";
+        document.getElementById("progressText").innerText = `Открыто тайн: ${unlocked} из 5`;
+    }
+
+    function changeTask(delta) {
+        let newIdx = currentTask + delta;
+        if (newIdx < 0 || newIdx > 4) return;
+        if (devMode || newIdx < progress[currentPart]) {
+            currentTask = newIdx;
+            renderCurrentTask();
+        } else alert("Сначала отсканируйте QR-ключ, чтобы открыть это задание.");
+    }
+
+    function setPart(part) {
+        currentPart = part;
+        currentTask = Math.min(progress[part]-1, 4);
+        if(currentTask<0) currentTask=0;
+        renderCurrentTask();
+        document.querySelectorAll(".tab").forEach((btn,idx)=>{
+            if(idx==currentPart) btn.classList.add("active");
+            else btn.classList.remove("active");
+        });
+        updateProgress();
+    }
+
+    function resetProgress() {
+        if(confirm("Сбросить прогресс части? Все сканирования и ответы будут очищены.")){
+            progress[currentPart] = 1;
+            for (let i=0;i<5;i++) {
+                delete scannedForTask[`${currentPart}_${i}`];
+                delete answerStatus[`${currentPart}_${i}`];
+            }
+            saveAll();
+            currentTask = 0;
+            renderCurrentTask();
+            updateProgress();
+        }
+    }
+
+    // Сканер
+    function startScanner() {
+        if (scannerActive) { alert("Сканер уже работает"); return; }
+        const scannerDiv = document.createElement("div");
+        scannerDiv.id = "qr-scanner";
+        scannerDiv.style.position = "fixed";
+        scannerDiv.style.bottom = "20px";
+        scannerDiv.style.left = "20px";
+        scannerDiv.style.right = "20px";
+        scannerDiv.style.backgroundColor = "#ffffffdd";
+        scannerDiv.style.borderRadius = "48px";
+        scannerDiv.style.padding = "15px";
+        scannerDiv.style.zIndex = "999";
+        scannerDiv.style.border = "1px solid #7fb2a0";
+        scannerDiv.innerHTML = `<div style="display:flex; justify-content:space-between;"><span>📷 Наведите камеру на QR-код</span><button id="closeScanner" style="background:#6fa392; color:white; border:none; border-radius:30px; padding:5px 15px;">Закрыть</button></div><div id="qr-reader" style="width:100%; margin-top:10px;"></div>`;
+        document.body.appendChild(scannerDiv);
+        html5QrScanner = new Html5Qrcode("qr-reader");
+        html5QrScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } },
+            (decodedText) => { tryUnlockWithAnyQR(); stopScanner(); scannerDiv.remove(); },
+            (err) => {});
+        scannerActive = true;
+        document.getElementById("closeScanner").onclick = () => { stopScanner(); scannerDiv.remove(); };
+    }
+    function stopScanner() { if(html5QrScanner) { html5QrScanner.stop(); html5QrScanner = null; } scannerActive = false; }
+
+    // Печать QR
+    function showPrintModal() {
+        const modal = document.getElementById("printModal");
+        const container = document.getElementById("qrPrintContainer");
+        container.innerHTML = "";
+        const dummyUrl = window.location.href.split('#')[0] + "#dummy";
+        for(let p=0;p<3;p++){
+            for(let t=1;t<=5;t++){
+                const div = document.createElement("div");
+                div.className = "qr-print-item";
+                div.innerHTML = `<h4>Часть ${p+1} · Задание ${t}</h4><div id="qr_${p}_${t}"></div><p style="font-size:0.7rem;">Спрячьте этот QR в месте, указанном в ответе</p>`;
+                container.appendChild(div);
+                setTimeout(() => {
+                    new QRCode(document.getElementById(`qr_${p}_${t}`), { text: dummyUrl, width: 180, height: 180, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+                }, 10);
+            }
+        }
+        modal.style.display = "block";
+    }
+
+    // Стили
+    let styleVars = { cardBg: "#ffffffd9", titleColor: "#2e5b4e", riddleColor: "#2b5446", riddleBg: "#fafef9", btnColor: "#bfddd2" };
+    function applyStyles() {
+        const card = document.querySelector(".quest-card");
+        if(card) card.style.backgroundColor = styleVars.cardBg;
+        document.querySelectorAll(".task-title").forEach(el => el.style.color = styleVars.titleColor);
+        const riddleDiv = document.querySelector(".riddle-text");
+        if(riddleDiv) { riddleDiv.style.color = styleVars.riddleColor; riddleDiv.style.backgroundColor = styleVars.riddleBg; }
+        document.querySelectorAll(".answer-area button, .nav-btn, .action-btn, #resetProgressBtn").forEach(btn => btn.style.backgroundColor = styleVars.btnColor);
+    }
+    function loadStyles() { const s = localStorage.getItem("sea_styles"); if(s) { styleVars = JSON.parse(s); applyStyles(); } }
+    function saveStyles() { localStorage.setItem("sea_styles", JSON.stringify(styleVars)); }
+
+    // Режим разработчика (пароль)
+    function promptDevMode() {
+        let pwd = prompt("Введите пароль разработчика:");
+        if (pwd === devPassword) {
+            devMode = true;
+            document.getElementById("devPanel").classList.add("show");
+            document.getElementById("devModeBtn").classList.add("dev-active");
+            renderCurrentTask();
+            updateNavButtons();
+        } else { alert("Неверный пароль"); }
+    }
+    function toggleDevMode() { if(!devMode) promptDevMode(); else { devMode=false; document.getElementById("devPanel").classList.remove("show"); document.getElementById("devModeBtn").classList.remove("dev-active"); renderCurrentTask(); updateNavButtons(); } }
+
+    // Показать все ответы
+    function showAnswersModal() {
+        let html = '<ul style="list-style:none;">';
+        for(let p=0;p<3;p++) {
+            html += `<li><strong>Часть ${p+1}</strong><ul>`;
+            for(let t=0;t<5;t++) {
+                html += `<li>Задание ${t+1}: ${tasksData[p][t].answer}</li>`;
+            }
+            html += `</ul></li>`;
+        }
+        html += '</ul>';
+        document.getElementById("answersList").innerHTML = html;
+        document.getElementById("answersModal").style.display = "block";
+    }
+
+    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        loadData(); loadStyles();
+        renderCurrentTask(); updateProgress();
+        document.getElementById("prevBtn").onclick = () => changeTask(-1);
+        document.getElementById("nextBtn").onclick = () => changeTask(1);
+        document.getElementById("resetProgressBtn").onclick = resetProgress;
+        document.getElementById("editTasksBtn").onclick = openEditorModal;
+        document.getElementById("closeEditorModal").onclick = () => document.getElementById("editorModal").style.display = "none";
+        document.getElementById("devModeBtn").onclick = toggleDevMode;
+        document.getElementById("handbookBtn").onclick = () => document.getElementById("handbookModal").style.display = "block";
+        document.getElementById("closeHandbook").onclick = () => document.getElementById("handbookModal").style.display = "none";
+        document.getElementById("printQrBtn").onclick = showPrintModal;
+        document.getElementById("closePrint").onclick = () => document.getElementById("printModal").style.display = "none";
+        document.getElementById("startScannerBtn").onclick = startScanner;
+        document.getElementById("applyStyleBtn").onclick = () => {
+            styleVars.cardBg = document.getElementById("cardBg").value;
+            styleVars.titleColor = document.getElementById("titleColor").value;
+            styleVars.riddleColor = document.getElementById("riddleColor").value;
+            styleVars.riddleBg = document.getElementById("riddleBg").value;
+            styleVars.btnColor = document.getElementById("btnColor").value;
+            applyStyles(); saveStyles();
+        };
+        document.getElementById("showAnswersBtn").onclick = showAnswersModal;
+        document.getElementById("closeAnswersModal").onclick = () => document.getElementById("answersModal").style.display = "none";
+        document.getElementById("addTokensDevBtn").onclick = () => { addTokens(10); alert("Добавлено 10 токенов"); };
+        document.getElementById("resetTokensDevBtn").onclick = () => { tokens = 0; updateTokenDisplay(); alert("Токены сброшены"); };
+        document.getElementById("riddleForTokenBtn").onclick = openRiddleModal;
+        document.getElementById("buyHintBtn").onclick = openHintModal;
+        document.getElementById("closeRiddleModal").onclick = () => document.getElementById("riddleModal").style.display = "none";
+        document.getElementById("closeHintModal").onclick = () => document.getElementById("hintModal").style.display = "none";
+        document.querySelectorAll(".tab").forEach(btn => { btn.onclick = () => setPart(parseInt(btn.dataset.part)); });
+        const congratsModal = document.getElementById("congratsModal");
+        document.getElementById("closeCongrats").onclick = () => congratsModal.style.display = "none";
+        document.getElementById("closeCongratsBtn").onclick = () => congratsModal.style.display = "none";
+        document.getElementById("playMusicBtn").onclick = () => { document.getElementById("birthdayAudio").play().catch(e=>alert("Нажмите ещё раз")); };
+    });
+</script>
+</body>
+</html>
